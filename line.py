@@ -4,11 +4,12 @@ from point import *
 class Line():
 
 
-	def __init__(self, canvas,x1,y1,x2,y2):
+	def __init__(self, canvas,x1,y1,x2,y2,width):
 		self.canvas = canvas
 		self.p1 = Point(x1,y1)
 		self.p2 = Point(x2,y2)
-		self.shape = canvas.create_line(x1,y1,x2,y2)
+		self.width = width # Default line width =1
+		self.shape = canvas.create_line(x1,y1,x2,y2,width=width)
 
 
 
@@ -64,7 +65,10 @@ class Line():
 
 		# Note: must check with < because xa and xc are int, xb and xd are float
 
-		if abs(xa-xb)<0.0001: 
+	#	xa = float(xa)
+	#	xc = float(xc)
+
+		if abs(xa-xb)<0.00001: 
 			if xc == xd:
 				return None
 			else:
@@ -72,7 +76,7 @@ class Line():
 				b2 = yd - m2*xd
 				x = xa
 				y = m2*x+b2
-		elif abs(xc-xd)<0.0001:
+		elif abs(xc-xd)<0.00001:
 			m1 = float(yb-ya)/(xb-xa)
 			b1 = ya - m1*xa
 			x = xc
