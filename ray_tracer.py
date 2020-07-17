@@ -33,14 +33,21 @@ numObstacles = 0
 obstacles = []
 
 
+
 for i in range(numRays):
 	rays.append(Line(canvas,0,0,0,0))
 
 
 
 
-source = Circle(canvas,0,0,5)
 
+
+def resetRays(x,y):
+	
+	for i in range(numRays):
+		angle = (i/float(numRays))*(2*math.pi)
+		rays[i].move(x,y,x+1000*math.cos(angle),y+1000*math.sin(angle)) # 1000 is just a big number (outside of screen)
+	
 
 def mouse_click(event):
 	global click,x1,x2,y1,y2,numObstacles
@@ -55,15 +62,30 @@ def mouse_click(event):
 	click = (click+1)%2
 
 def mouse_move(event):
-	global numObstacles
 	x = event.x
 	y = event.y
-	for i in range(numRays):
-		angle = (i/float(numRays))*(2*math.pi)
-		minX = windowHeight # some large number
-		for j in range(numObstacles):
-			rays[i].move(x,y,1000*math.cos(angle),1000*math.sin(angle)) # 1000 is just a big number (outside of screen)
+	resetRays(x,y)
 
+
+	for i in range(numRays):
+		rays[i].draw()
+	
+		angle = (i/float(numRays))*(2*math.pi)
+		minX = float('inf') # some large number
+		minY = float('inf')
+
+		for j in range(numObstacles):
+			intersectionPoint = Line.intersection(rays[i],obstacles[j])
+			if intersectionPoint is not None:
+				distX = intersectionPoint[0]-x
+				distY = intersectionPoint[1]-y
+				if abs(distX)<abs(minX) and abs(distY)<abs(minY):
+					minX = intersectionPoint[0]
+					minY = intersectionPoint[1]
+				rays[i].move(x,y,minX,minY) 
+				rays[i].draw()
+	
+	
 
 
 
