@@ -33,6 +33,8 @@ class Line():
 		y2 = self.p2.getPointCoords()[1]
 		self.canvas.coords(self.shape,x1,y1,x2,y2)
 
+	def hide(self):
+		self.canvas.coords(self.shape,0,0,0,0)
 
 	# Inputs - (Line l1, Line l2):
 	# l1 is ray (xa,ya) -> (xb,yb)
