@@ -1,5 +1,5 @@
 from point import *
-
+import math
 
 class Line():
 
@@ -65,10 +65,9 @@ class Line():
 		y = 0
 
 
-		# Note: must check with < because xa and xc are int, xb and xd are float
 
-	#	xa = float(xa)
-	#	xc = float(xc)
+		# Note: must check with < because xa and xc are int, xb and xd are float
+		# See Important Note below for more details
 
 		if abs(xa-xb)<0.00001: 
 			if xc == xd:
@@ -93,9 +92,44 @@ class Line():
 			x = (b2-b1)/(m1-m2)
 			y = m1*x+b1
 
-		if (((x>=xd and x<=xc) or (x>=xc and x<=xd)) and ((y>=yd and y<=yc) or (y>=yc and y<=yd))) and (((x>=xb and x<=xa) or (x>=xa and x<=xb)) and ((y>=yb and y<=ya) or (y>=ya and y<=yb))):
+
+		#  ******* IMPORTANT NOTE *******
+		#  Need to round in order to avoid the following round off error
+		# 		2 <= 2.0	    			True
+		#		2 <= 2.0000000001			False
+		# 
+		#	The tailing 1 on the second example is an artifact of floating point arithmatic
+		#	Rounding to 4 digits give us decent precision and removes this round of error
+		#
+
+		xa = round(xa,6)
+		xb = round(xb,6)
+		xc = round(xc,6)
+		xd = round(xd,6)
+		x = round(x,6)
+		y = round(y,6)
+	
+		if (((x>=xd and x<=xc) or (x>=xc and x<=xd)) and ((y>=yd and y<=yc) or (y>=yc and y<=yd))) and (((x>=xb and x<=xa) or (x>=xa and x<=xb)) and ((y>=yb and y<=ya) or (y>=ya and y<=yb))):	
+			"""
+			print(" **** IN ******")
+			print("Ray end points: (" + str(xa)+","+str(ya) + ") -> (" + str(xb)+","+str(yb) + ")")
+			print("Obstacle end points: (" + str(xc)+","+str(yc) + ") -> (" + str(xd)+","+str(yd)+ ")")
+			print("Intersection Point: " + str(x) + ","+str(y))
+			dx = x-xa
+			dy = y-ya
+			dist = math.sqrt(dx**2 + dy**2)
+			print("Distance: " + str(dist))
+			print("***** IN (end) *******")
+			"""
 			return [x,y]
 		else:
+			"""
+			print(" **** NONE *******")
+			print("Ray end points: (" + str(xa)+","+str(ya) + ") -> (" + str(xb)+","+str(yb) + ")")
+			print("Obstacle end points: (" + str(xc)+","+str(yc) + ") -> (" + str(xd)+","+str(yd)+ ")")
+			print("Intersection (NONE) Point: " + str(x) + ","+str(y))
+			print(" **** NONE (end) *****")
+			"""
 			return None
 			
 
