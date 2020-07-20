@@ -51,10 +51,11 @@ obstacleWidth = 3
 numObstacles = 0
 obstacles = []
 
-
+obstacleMode = 0
 
 potentialObstacle = Line(canvas,0,0,0,0,obstacleWidth)
 potentialObstacleSignal = False
+
 
 
 
@@ -63,7 +64,7 @@ for i in range(numRays):
 
 
 
-
+# mode 0 = none
 # mode 1 = simple maze
 
 def preDefinedObstacles(mode):
@@ -156,6 +157,8 @@ def mouse_move(event):
 	calculateBlockedRays()
 
 
+# ******** Key Bindings **********
+
 # Allows you to cancel drawing a new obstacle	
 def escape(event):
 	global potentialObstacle, potentialObstacleSignal, click
@@ -163,6 +166,17 @@ def escape(event):
 	click = 0
 	potentialObstacle.move(0,0,0,0)
 	potentialObstacle.draw()
+
+# Remove most recently drawn obstacle
+def delete(event):
+	global numObstacles
+	if numObstacles > 0:
+		ob = obstacles.pop()
+		ob.move(0,0,0,0)
+		ob.draw()
+		numObstacles = numObstacles - 1
+		calculateUnblockedRays()
+		calculateBlockedRays()
 
 
 def aKey(event):
@@ -185,9 +199,10 @@ canvas.focus_set()
 canvas.bind("<Button-1>", mouse_click)
 canvas.bind("<Motion>",mouse_move)
 canvas.bind("<Escape>", escape)
+canvas.bind("<BackSpace>", delete)
 canvas.bind('<a>', aKey)
 canvas.bind('<d>', dKey)
-preDefinedObstacles(1)
+preDefinedObstacles(obstacleMode)
 
 
 canvas.mainloop()
