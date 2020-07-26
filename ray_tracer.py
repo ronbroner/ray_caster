@@ -17,6 +17,8 @@ windowHeight = 500
 master = Tk()
 master.title('Ray Tracer - 2D View')
 master.geometry('%dx%d+%d+%d' % (windowHeight, windowWidth, 100, 100))
+master.minsize(windowWidth,windowWidth) # Make window size fixed
+master.maxsize(windowWidth,windowWidth)
 canvas2d = Canvas(master,width=windowWidth, height=windowHeight,highlightthickness=0)
 canvas2d.pack()
 
@@ -25,6 +27,8 @@ canvas2d.pack()
 slave = Tk()
 slave.title('Ray Tracer - Rendering')
 slave.geometry('%dx%d+%d+%d' % (windowHeight, windowWidth, windowWidth + 200, 100))
+slave.minsize(windowWidth,windowWidth) # Make window size fixed
+slave.maxsize(windowWidth,windowWidth)
 canvas3d = Canvas(slave,width=windowWidth, height=windowHeight, highlightthickness=0,background='white',bd=-2)
 canvas3d.pack()
 
@@ -67,7 +71,6 @@ for i in range(numRays):
 
 ###### 3D VARIABLES #######
 rend = Render(canvas3d,windowWidth,windowHeight,numRays)
-#canvas2d.create_rectangle(0,0,100,100,fill="#%02x%02x%02x" % (150,150,150) ,outline="")
 #canvas2d.create_rectangle(100,100,200,200,fill="#%02x%02x%02x" % (190,190,190) ,outline="")
 
 # mode 0 = none
@@ -214,6 +217,20 @@ def dKey(event):
 	rend.updateRays(rays)
 
 
+
+def up(event):
+	rend.moveUp()
+
+	# Changes to 3d below
+	rend.updateRays(rays)
+
+def down(event):
+	rend.moveDown()
+
+	# Changes to 3d below
+	rend.updateRays(rays)
+
+
 # setip for 2D  below
 canvas2d.focus_set()
 canvas2d.bind("<Button-1>", mouse_click)
@@ -228,8 +245,8 @@ preDefinedObstacles(obstacleMode)
 # setup for 3D  below
 canvas3d.focus_set()
 canvas3d.bind("<Return>",enter)
-
-
+canvas2d.bind("<Up>",up)
+canvas2d.bind("<Down>",down)
 
 
 canvas3d.mainloop()
