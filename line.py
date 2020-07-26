@@ -22,6 +22,10 @@ class Line():
 	def getSecond(self):
 		return self.p2
 
+	def getLength(self):
+		return math.sqrt((self.p1.getPointCoords()[0] - self.p2.getPointCoords()[0])**2 + (self.p1.getPointCoords()[1] - self.p2.getPointCoords()[1])**2)
+
+
 	def move(self,x1,y1,x2,y2):
 		self.p1.setPoint(x1,y1)
 		self.p2.setPoint(x2,y2)
