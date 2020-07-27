@@ -15,7 +15,7 @@ windowWidth = 480
 windowHeight = 500
 
 master = Tk()
-master.title('Ray Tracer - 2D View')
+master.title('Ray Caster - 2D View')
 master.geometry('%dx%d+%d+%d' % (windowHeight, windowWidth, 100, 100))
 master.minsize(windowWidth,windowWidth) # Make window size fixed
 master.maxsize(windowWidth,windowWidth)
@@ -25,7 +25,7 @@ canvas2d.pack()
 
 
 slave = Tk()
-slave.title('Ray Tracer - Rendering')
+slave.title('Ray Caster - Rendering')
 slave.geometry('%dx%d+%d+%d' % (windowHeight, windowWidth, windowWidth + 200, 100))
 slave.minsize(windowWidth,windowWidth) # Make window size fixed
 slave.maxsize(windowWidth,windowWidth)
@@ -72,6 +72,8 @@ for i in range(numRays):
 ###### 3D VARIABLES #######
 rend = Render(canvas3d,windowWidth,windowHeight,numRays)
 #canvas2d.create_rectangle(100,100,200,200,fill="#%02x%02x%02x" % (190,190,190) ,outline="")
+
+
 
 # mode 0 = none
 # mode 1 = simple maze
@@ -162,6 +164,9 @@ def mouse_move(event):
 		potentialObstacle.move(0,0,0,0)
 	potentialObstacle.draw()
 
+	runCalculations()
+
+def runCalculations():
 	# Changes to 2d below
 	calculateUnblockedRays()
 	calculateBlockedRays()
@@ -188,8 +193,7 @@ def delete(event):
 		ob.move(0,0,0,0)
 		ob.draw()
 		numObstacles = numObstacles - 1
-		calculateUnblockedRays()
-		calculateBlockedRays()
+		runCalculations()
 
 def enter(event):
 	sys.exit(0)
@@ -197,38 +201,28 @@ def enter(event):
 def aKey(event):
 	global viewAngleRef
 	viewAngleRef = viewAngleRef - 0.1
-	# Changes to 2d below
-	calculateUnblockedRays()
-	calculateBlockedRays()
 
-	# Changes to 3d below
-	rend.updateRays(rays)
+	runCalculations()
 
 
 
 def dKey(event):
 	global viewAngleRef
 	viewAngleRef = viewAngleRef + 0.1
-	# Changes to 2d below
-	calculateUnblockedRays()
-	calculateBlockedRays()
-
-	# Changes to 3d below
-	rend.updateRays(rays)
+	runCalculations()
 
 
 
 def up(event):
-	rend.moveUp()
-
-	# Changes to 3d below
-	rend.updateRays(rays)
+	rend.moveUpDown(5)
+	runCalculations()
 
 def down(event):
-	rend.moveDown()
+	rend.moveUpDown(-5)
+	runCalculations()
 
-	# Changes to 3d below
-	rend.updateRays(rays)
+
+
 
 
 # setip for 2D  below
@@ -242,12 +236,13 @@ canvas2d.bind('<a>', aKey)
 canvas2d.bind('<d>', dKey)
 preDefinedObstacles(obstacleMode)
 
-# setup for 3D  below
+# setup for 3D  below (bindings still mostly for 2d window)
 canvas3d.focus_set()
 canvas3d.bind("<Return>",enter)
 canvas2d.bind("<Up>",up)
 canvas2d.bind("<Down>",down)
-
+ 
+runCalculations() # makes everything appear on launch rather than after first click
 
 canvas3d.mainloop()
 canvas2d.mainloop()

@@ -61,11 +61,12 @@ class Render():
 			self.skyRects[i].resize(self.rectWidth,yCoord) 
 			self.skyRects[i].draw()
 
-	def moveUp(self):
-		self.povHeight = self.povHeight + 5
+	def moveUpDown(self,amount):
+		self.povHeight = self.povHeight + amount
 
-	def moveDown(self):
-		self.povHeight = self.povHeight - 5
+	def getPovHeight(self):
+		return self.povHeight
+
 
 
 
