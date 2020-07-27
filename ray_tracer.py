@@ -3,31 +3,38 @@ from Tkinter import *
 from random import *
 import time
 import math
-
+import sys
 
 from line import *
-from circle import*
+from circle import *
+from rectangle import *
 
-
+from render import *
 
 windowWidth = 480
 windowHeight = 500
 
 master = Tk()
-master.title('Ray Tracer - 2D View')
+master.title('Ray Caster - 2D View')
 master.geometry('%dx%d+%d+%d' % (windowHeight, windowWidth, 100, 100))
-canvas = Canvas(master,width=windowWidth, height=windowHeight,highlightthickness=0)
-canvas.pack()
+master.minsize(windowWidth,windowWidth) # Make window size fixed
+master.maxsize(windowWidth,windowWidth)
+canvas2d = Canvas(master,width=windowWidth, height=windowHeight,highlightthickness=0)
+canvas2d.pack()
 
 
-"""
+
 slave = Tk()
-slave.title('Ray Tracer - Rendering')
+slave.title('Ray Caster - Rendering')
 slave.geometry('%dx%d+%d+%d' % (windowHeight, windowWidth, windowWidth + 200, 100))
-canvas2 = Canvas(slave,width=windowWidth, height=windowHeight, highlightthickness=0)
-canvas2.pack()
-"""
+slave.minsize(windowWidth,windowWidth) # Make window size fixed
+slave.maxsize(windowWidth,windowWidth)
+canvas3d = Canvas(slave,width=windowWidth, height=windowHeight, highlightthickness=0,background='white',bd=-2)
+canvas3d.pack()
 
+
+###### 2D VARIABLES #######
+ 
 mouseX = 0
 mouseY = 0
 
@@ -39,7 +46,7 @@ y2 = 0
 
 
 rayWidth = 1
-numRays = 40
+numRays = 240
 rays = []
 
 
@@ -51,16 +58,20 @@ obstacleWidth = 3
 numObstacles = 0
 obstacles = []
 
-obstacleMode = 0
+obstacleMode = 1
 
-potentialObstacle = Line(canvas,0,0,0,0,obstacleWidth)
+potentialObstacle = Line(canvas2d,0,0,0,0,obstacleWidth)
 potentialObstacleSignal = False
 
 
-
-
 for i in range(numRays):
-	rays.append(Line(canvas,0,0,0,0,rayWidth))
+	rays.append(Line(canvas2d,0,0,0,0,rayWidth))
+
+
+
+###### 3D VARIABLES #######
+rend = Render(canvas3d,windowWidth,windowHeight,numRays)
+#canvas2d.create_rectangle(100,100,200,200,fill="#%02x%02x%02x" % (190,190,190) ,outline="")
 
 
 
@@ -77,16 +88,16 @@ def preDefinedObstacles(mode):
 		numRevs = 2
 		while numRevs >= 0:
 			if counter == 0:
-				obstacles.append(Line(canvas,x,y,x,y-l,obstacleWidth))
+				obstacles.append(Line(canvas2d,x,y,x,y-l,obstacleWidth))
 				y = y-l
 			elif counter == 1:
-				obstacles.append(Line(canvas,x,y,x+l,y,obstacleWidth))
+				obstacles.append(Line(canvas2d,x,y,x+l,y,obstacleWidth))
 				x = x+l
 			elif counter == 2:
-				obstacles.append(Line(canvas,x,y,x,y+l,obstacleWidth))
+				obstacles.append(Line(canvas2d,x,y,x,y+l,obstacleWidth))
 				y = y+l
 			elif counter == 3:
-				obstacles.append(Line(canvas,x,y,x-l,y,obstacleWidth))
+				obstacles.append(Line(canvas2d,x,y,x-l,y,obstacleWidth))
 				x = x-l
 				numRevs = numRevs - 1
 			l = l-20
@@ -136,7 +147,7 @@ def mouse_click(event):
 	elif click == 1:
 		x2 = event.x
 		y2 = event.y
-		obstacles.append(Line(canvas,x1,y1,x2,y2,obstacleWidth))
+		obstacles.append(Line(canvas2d,x1,y1,x2,y2,obstacleWidth))
 		numObstacles = numObstacles + 1
 		potentialObstacleSignal = False
 	click = (click+1)%2
@@ -153,8 +164,15 @@ def mouse_move(event):
 		potentialObstacle.move(0,0,0,0)
 	potentialObstacle.draw()
 
+	runCalculations()
+
+def runCalculations():
+	# Changes to 2d below
 	calculateUnblockedRays()
 	calculateBlockedRays()
+
+	# Changes to 3d below
+	rend.updateRays(rays)
 
 
 # ******** Key Bindings **********
@@ -175,34 +193,56 @@ def delete(event):
 		ob.move(0,0,0,0)
 		ob.draw()
 		numObstacles = numObstacles - 1
-		calculateUnblockedRays()
-		calculateBlockedRays()
+		runCalculations()
 
+def enter(event):
+	sys.exit(0)
 
 def aKey(event):
 	global viewAngleRef
 	viewAngleRef = viewAngleRef - 0.1
-	calculateUnblockedRays()
-	calculateBlockedRays()
+
+	runCalculations()
 
 
 
 def dKey(event):
 	global viewAngleRef
 	viewAngleRef = viewAngleRef + 0.1
-	calculateUnblockedRays()
-	calculateBlockedRays()
+	runCalculations()
 
 
 
-canvas.focus_set()
-canvas.bind("<Button-1>", mouse_click)
-canvas.bind("<Motion>",mouse_move)
-canvas.bind("<Escape>", escape)
-canvas.bind("<BackSpace>", delete)
-canvas.bind('<a>', aKey)
-canvas.bind('<d>', dKey)
+def up(event):
+	rend.moveUpDown(5)
+	runCalculations()
+
+def down(event):
+	rend.moveUpDown(-5)
+	runCalculations()
+
+
+
+
+
+# setip for 2D  below
+canvas2d.focus_set()
+canvas2d.bind("<Button-1>", mouse_click)
+canvas2d.bind("<Motion>",mouse_move)
+canvas2d.bind("<Escape>", escape)
+canvas2d.bind("<BackSpace>", delete)
+canvas2d.bind("<Return>",enter)
+canvas2d.bind('<a>', aKey)
+canvas2d.bind('<d>', dKey)
 preDefinedObstacles(obstacleMode)
 
+# setup for 3D  below (bindings still mostly for 2d window)
+canvas3d.focus_set()
+canvas3d.bind("<Return>",enter)
+canvas2d.bind("<Up>",up)
+canvas2d.bind("<Down>",down)
+ 
+runCalculations() # makes everything appear on launch rather than after first click
 
-canvas.mainloop()
+canvas3d.mainloop()
+canvas2d.mainloop()
