@@ -125,16 +125,25 @@ def delete(event):
 def enter(event):
 	sys.exit(0)
 
-# rotate 2D ray caster view angle counter-clockwise
-def aKey(event):
+# rotate 2D ray caster view angle and rendering counter-clockwise
+def left(event):
 	cast.viewAngleRef = cast.viewAngleRef - 0.1
 	runCalculations()
 
-# rotate 2D ray caster view angle clockwise
-def dKey(event):
+# rotate 2D ray caster view angle and rendering clockwise
+def right(event):
 	cast.viewAngleRef = cast.viewAngleRef + 0.1
 	runCalculations()
 
+# Moves fowards in 2D ray caster and rendering by 5 unit lengths
+def forward(event):
+	cast.moveForwardBackwards(5)
+	runCalculations()
+
+# Moves backwards in 2D ray caster and rendering by 5 unit lengths
+def backward(event):
+	cast.moveForwardBackwards(-5)
+	runCalculations()
 
 # moves the pov up 5 pixels when the up arrow is pressed
 def up(event):
@@ -157,15 +166,17 @@ canvas2d.bind("<Motion>",mouse_move)
 canvas2d.bind("<Escape>", escape)
 canvas2d.bind("<BackSpace>", delete)
 canvas2d.bind("<Return>",enter)
-canvas2d.bind('<a>', aKey)
-canvas2d.bind('<d>', dKey)
+canvas2d.bind('<Left>', left)
+canvas2d.bind('<Right>', right)
+canvas2d.bind('<Up>', forward)
+canvas2d.bind('<Down>', backward)
 cast.preDefinedObstacles(cast.obstacleMode)
 
 # setup keybindings for 3D  below (bindings still mostly for 2d window)
 canvas3d.focus_set()
 canvas3d.bind("<Return>",enter)
-canvas2d.bind("<Up>",up)
-canvas2d.bind("<Down>",down)
+canvas2d.bind("<w>",up)
+canvas2d.bind("<s>",down)
  
 runCalculations() # makes everything appear on launch rather than after first click
 

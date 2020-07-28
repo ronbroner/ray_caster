@@ -112,3 +112,19 @@ class Caster():
 					self.rays[i].move(self.mouseCoords.x,self.mouseCoords.y,minX,minY) 
 			self.rays[i].draw()
 			
+
+	# Calculates the unit vector of the center ray and moves the mouseCoordinates (which is the POV location)
+	# by stepSize * <unit vector>. 
+	# Make stepSize > 0 to move forward and stepSize < 0 to move backwards
+	def moveForwardBackwards(self,stepSize):
+		# Calculate the unit vector of the middle ray ( rays[numRays/2] )
+		midRay = self.rays[int(self.numRays/2)]
+		deltaX = midRay.getSecond().x-midRay.getFirst().x
+		deltaY = midRay.getSecond().y-midRay.getFirst().y
+		magnitude = math.sqrt(deltaX**2 + deltaY**2)
+
+		unitX = deltaX/magnitude
+		unitY = deltaY/magnitude
+
+		# Updates the mouse coordinates by stepSize * <unit vector>. 
+		self.updateMouse(self.mouseCoords.x + unitX*stepSize, self.mouseCoords.y + unitY*stepSize)
