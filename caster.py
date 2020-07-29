@@ -44,7 +44,7 @@ class Caster():
 
 		# Initialize the rays
 		for i in range(self.numRays):
-			self.rays.append(Line(self.canvas,0,0,0,0,self.rayWidth))
+			self.rays.append(Line(self.canvas,0,0,0,0,self.rayWidth,'yellow'))
 
 	# Updates mouse location in frame (2D raycaster fram only)
 	def updateMouse(self,x,y):
@@ -77,6 +77,7 @@ class Caster():
 				l = l-20
 				counter = (counter + 1)%4
 				self.numObstacles = self.numObstacles + 1
+
 
 	# Calculates the geometry of rays (length, intersection, etc.) as if there are no obstacles
 	# This makes further calcultions easier.

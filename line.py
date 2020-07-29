@@ -7,7 +7,7 @@ import math
 class Line():
 
 	# Initialize all variables needed to draw a line
-	def __init__(self, canvas,x1,y1,x2,y2,width):
+	def __init__(self, canvas,x1,y1,x2,y2,width,color='black'):
 		# Drawing surface canvas
 		self.canvas = canvas
 		
@@ -19,7 +19,7 @@ class Line():
 		self.width = width 
 
 		# Draw the line object on the canvas
-		self.shape = canvas.create_line(x1,y1,x2,y2,width=width) 
+		self.shape = canvas.create_line(x1,y1,x2,y2,width=width,fill=color) 
 
 
 	# Prints the line's two end point coordinates
