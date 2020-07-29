@@ -92,7 +92,3 @@ class Render():
 	# Returns the POV height (the angle of polar head tilt)
 	def getPovHeight(self):
 		return self.povHeight
-
-
-
-

@@ -40,12 +40,18 @@ canvas3d = Canvas(slave,width=windowWidth, height=windowHeight, highlightthickne
 canvas3d.pack()
 
 
+# Number of rays to use for the whole program
+# NOTE: Increasing this number will increase your resolution but slow down your computer quite a bit
+# For Raspi 4, recommended range is 120-240.
+# For Mac/Windows Machine, 240-960 is good
+# Should be multiple of 40
+numRays = 480
 
 ##### Set up 2D Raycaster Object ####
-cast = Caster(canvas2d)
+cast = Caster(canvas2d,numRays)
 
 ###### Set up 3D Rendering Object #######
-rend = Render(canvas3d,windowWidth,windowHeight,cast.numRays)
+rend = Render(canvas3d,windowWidth,windowHeight,numRays)
 
 
 # Click once to set up the first endpoint of a new obstacle, then as you move the mouse you will drag 
@@ -95,11 +101,10 @@ def mouse_move(event):
 # Method calls on all the "calculation" helper methods (i.e find/draw the location and length of all rays in the 
 # raycaster window and then the rendered rays in the rendering window 
 def runCalculations():
-	# Changes to 2d below
-	cast.calculateUnblockedRays()
-	cast.calculateBlockedRays()
+	# Initiates calculations to Ray Caster - 2D View window
+	cast.updateRays()
 
-	# Changes to 3d below
+	# Initiates calculations to Ray Caster - Rendering window
 	rend.updateRays(cast.rays)
 
 

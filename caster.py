@@ -1,6 +1,7 @@
 import math
 from point import *
 from line import *
+from circle import *
 
 # Written by Ron Broner 
 # All rights reserved 
@@ -8,7 +9,7 @@ from line import *
 class Caster():
 
 	# Initialize all variables local to 2D raycasting
-	def __init__(self,canvas):
+	def __init__(self,canvas,numRays):
 		#drawing surface canvas
 		self.canvas = canvas
 		# Coordinates of the mouse pointer
@@ -23,7 +24,7 @@ class Caster():
 		
 		# Ray parameters
 		self.rayWidth = 1
-		self.numRays = 240
+		self.numRays = numRays
 		self.rays = []
 
 		# Angle Subtended by rays
@@ -35,7 +36,7 @@ class Caster():
 		self.numObstacles = 0
 		self.obstacles = []
 
-		# Predefined obstacle "maps"
+		# Predefined obstacle. So far the only one I made is 1 = "maze"
 		self.obstacleMode = 1
 
 		# Initialize the obstacles
@@ -46,10 +47,23 @@ class Caster():
 		for i in range(self.numRays):
 			self.rays.append(Line(self.canvas,0,0,0,0,self.rayWidth,'yellow'))
 
+		self.locationDot = Circle(self.canvas,self.mouseCoords.getPointCoords()[0],self.mouseCoords.getPointCoords()[1],5,'red')
+
 	# Updates mouse location in frame (2D raycaster fram only)
 	def updateMouse(self,x,y):
 		self.mouseCoords.x = x
 		self.mouseCoords.y = y
+
+	# Calls all method needed to update the location of the rays and location dot
+	def updateRays(self):
+		self.calculateUnblockedRays()
+		self.calculateBlockedRays()
+		self.updateLocationDot()
+
+	# Updates the location of the center dot, which is the location of the POV on the plane
+	def updateLocationDot(self):
+		self.locationDot.move(self.mouseCoords.getPointCoords()[0],self.mouseCoords.getPointCoords()[1])
+		self.locationDot.draw()
 
 	# Creates a predefined array of obstacles (rather than user created)
 	def preDefinedObstacles(self,mode):
