@@ -1,5 +1,10 @@
-#!/usr/bin/python
-from Tkinter import *
+#!/usr/bin/env python3
+
+
+# Written by Ron Broner 
+# All rights reserved 
+
+from tkinter import *
 from random import *
 import time
 import math
@@ -9,11 +14,13 @@ from line import *
 from circle import *
 from rectangle import *
 
+from caster import *
 from render import *
 
 windowWidth = 480
 windowHeight = 500
 
+# Define the First window - 2D Ray Caster View
 master = Tk()
 master.title('Ray Caster - 2D View')
 master.geometry('%dx%d+%d+%d' % (windowHeight, windowWidth, 100, 100))
@@ -23,7 +30,7 @@ canvas2d = Canvas(master,width=windowWidth, height=windowHeight,highlightthickne
 canvas2d.pack()
 
 
-
+# Define the Second window - Ray Caster Rendering
 slave = Tk()
 slave.title('Ray Caster - Rendering')
 slave.geometry('%dx%d+%d+%d' % (windowHeight, windowWidth, windowWidth + 200, 100))
@@ -33,190 +40,122 @@ canvas3d = Canvas(slave,width=windowWidth, height=windowHeight, highlightthickne
 canvas3d.pack()
 
 
-###### 2D VARIABLES #######
- 
-mouseX = 0
-mouseY = 0
+# Number of rays to use for the whole program
+# NOTE: Increasing this number will increase your resolution but slow down your computer quite a bit
+# For Raspi 4, recommended range is 120-240.
+# For Mac/Windows Machine, 240-960 is good
+# Should be multiple of 40
+numRays = 480
 
-click = 0
-x1 = 0
-x2 = 0
-y1 = 0
-y2 = 0
+##### Set up 2D Raycaster Object ####
+cast = Caster(canvas2d,numRays)
 
-
-rayWidth = 1
-numRays = 240
-rays = []
-
-
-viewAngle = 60
-viewAngleRef = 0
-
-
-obstacleWidth = 3
-numObstacles = 0
-obstacles = []
-
-obstacleMode = 1
-
-potentialObstacle = Line(canvas2d,0,0,0,0,obstacleWidth)
-potentialObstacleSignal = False
-
-
-for i in range(numRays):
-	rays.append(Line(canvas2d,0,0,0,0,rayWidth))
-
-
-
-###### 3D VARIABLES #######
+###### Set up 3D Rendering Object #######
 rend = Render(canvas3d,windowWidth,windowHeight,numRays)
-#canvas2d.create_rectangle(100,100,200,200,fill="#%02x%02x%02x" % (190,190,190) ,outline="")
 
 
-
-# mode 0 = none
-# mode 1 = simple maze
-
-def preDefinedObstacles(mode):
-	global numObstacles
-	if mode == 1:
-		l = 300
-		x = 100
-		y = 400
-		counter = 0
-		numRevs = 2
-		while numRevs >= 0:
-			if counter == 0:
-				obstacles.append(Line(canvas2d,x,y,x,y-l,obstacleWidth))
-				y = y-l
-			elif counter == 1:
-				obstacles.append(Line(canvas2d,x,y,x+l,y,obstacleWidth))
-				x = x+l
-			elif counter == 2:
-				obstacles.append(Line(canvas2d,x,y,x,y+l,obstacleWidth))
-				y = y+l
-			elif counter == 3:
-				obstacles.append(Line(canvas2d,x,y,x-l,y,obstacleWidth))
-				x = x-l
-				numRevs = numRevs - 1
-			l = l-20
-			counter = (counter + 1)%4
-			numObstacles = numObstacles + 1
-
-
-def calculateUnblockedRays():
-	for i in range(numRays):
-		rayAngle = (i/float(numRays))*(2*math.pi)*(viewAngle/360.0)
-		rays[i].move(mouseX,mouseY,mouseX+1000*math.cos(rayAngle+viewAngleRef),mouseY+1000*math.sin(rayAngle+viewAngleRef)) # 1000 is just a big number (outside of screen)
-	
-
-
-def calculateBlockedRays():
-	for i in range(numRays):
-
-		rayAngle = (i/float(numRays))*(2*math.pi)*(viewAngle/360.0)
-		minX = float('inf') # some large number
-		minY = float('inf')
-		minDist = float('inf')
-
-		
-		for j in range(numObstacles):
-			intersectionPoint = Line.intersection(rays[i],obstacles[j])
-			if intersectionPoint is not None:
-				distX = intersectionPoint[0]-mouseX
-				distY = intersectionPoint[1]-mouseY
-				dist = math.sqrt(distX**2 + distY**2)
-
-				if dist < minDist:
-					minX = intersectionPoint[0]
-					minY = intersectionPoint[1]
-					minDist = dist
-				rays[i].move(mouseX,mouseY,minX,minY) 
-		rays[i].draw()
-		
-
-
-
+# Click once to set up the first endpoint of a new obstacle, then as you move the mouse you will drag 
+# around the second endpoint until you click again where you define the second endpoint of the obstacle.
 def mouse_click(event):
-	global click,x1,x2,y1,y2,numObstacles,potentialObstacleSignal
-	if click == 0:
-		x1 = event.x
-		y1 = event.y
-		potentialObstacleSignal = True
-	elif click == 1:
-		x2 = event.x
-		y2 = event.y
-		obstacles.append(Line(canvas2d,x1,y1,x2,y2,obstacleWidth))
-		numObstacles = numObstacles + 1
-		potentialObstacleSignal = False
-	click = (click+1)%2
+	# First click
+	if cast.click == 0:
+		# Coordinates of the first endpoint of the line
+		cast.x1 = event.x
+		cast.y1 = event.y
 
+		# Flag to indicate that you clicked once and are in the middle of placing a new obstacle
+		cast.potentialObstacleSignal = True 
+	# Second click
+	elif cast.click == 1:
+		# Coordinates of the second endpoint of the line
+		cast.x2 = event.x
+		cast.y2 = event.y
+
+		# Draw the final new obstacle
+		cast.obstacles.append(Line(canvas2d,cast.x1,cast.y1,cast.x2,cast.y2,cast.obstacleWidth)) 
+
+		# increment the number of obstacle by 1
+		cast.numObstacles = cast.numObstacles + 1 
+
+		# Flag to indicate the new obstacle has been placed
+		cast.potentialObstacleSignal = False 
+	cast.click = (cast.click+1)%2
+
+# Move the mouse location around the window to change the location of the "light source" or pov. Every time the
+# mouse is moved all the rays are recalculated and subsequently the rendering is recalculated.
 def mouse_move(event):
-	global x1,y1,potentialObstacle,potentialObstacleSignal,mouseX,mouseY
-
-	mouseX = event.x
-	mouseY = event.y
+	# Update mouse coordinates
+	cast.updateMouse(event.x,event.y)
 	
-	if potentialObstacleSignal:
-		potentialObstacle.move(x1,y1,mouseX,mouseY)
+	# Uses the flag from the mouse_click method to show the new potential obstacle line
+	if cast.potentialObstacleSignal:
+		cast.potentialObstacle.move(cast.x1,cast.y1,cast.mouseCoords.x,cast.mouseCoords.y)
 	else:
-		potentialObstacle.move(0,0,0,0)
-	potentialObstacle.draw()
+		cast.potentialObstacle.move(0,0,0,0)
+	cast.potentialObstacle.draw()
 
+	# Calculate rays and rendering
 	runCalculations()
 
-def runCalculations():
-	# Changes to 2d below
-	calculateUnblockedRays()
-	calculateBlockedRays()
 
-	# Changes to 3d below
-	rend.updateRays(rays)
+# Method calls on all the "calculation" helper methods (i.e find/draw the location and length of all rays in the 
+# raycaster window and then the rendered rays in the rendering window 
+def runCalculations():
+	# Initiates calculations to Ray Caster - 2D View window
+	cast.updateRays()
+
+	# Initiates calculations to Ray Caster - Rendering window
+	rend.updateRays(cast.rays)
 
 
 # ******** Key Bindings **********
 
 # Allows you to cancel drawing a new obstacle	
 def escape(event):
-	global potentialObstacle, potentialObstacleSignal, click
-	potentialObstacleSignal = False
-	click = 0
-	potentialObstacle.move(0,0,0,0)
-	potentialObstacle.draw()
+	cast.potentialObstacleSignal = False
+	cast.click = 0
+	cast.potentialObstacle.move(0,0,0,0)
+	cast.potentialObstacle.draw()
 
 # Remove most recently drawn obstacle
 def delete(event):
-	global numObstacles
-	if numObstacles > 0:
-		ob = obstacles.pop()
+	if cast.numObstacles > 0:
+		ob = cast.obstacles.pop()
 		ob.move(0,0,0,0)
 		ob.draw()
-		numObstacles = numObstacles - 1
+		cast.numObstacles = cast.numObstacles - 1
 		runCalculations()
 
+# End program if Enter is pressed
 def enter(event):
 	sys.exit(0)
 
-def aKey(event):
-	global viewAngleRef
-	viewAngleRef = viewAngleRef - 0.1
-
+# rotate 2D ray caster view angle and rendering counter-clockwise
+def left(event):
+	cast.viewAngleRef = cast.viewAngleRef - 0.1
 	runCalculations()
 
-
-
-def dKey(event):
-	global viewAngleRef
-	viewAngleRef = viewAngleRef + 0.1
+# rotate 2D ray caster view angle and rendering clockwise
+def right(event):
+	cast.viewAngleRef = cast.viewAngleRef + 0.1
 	runCalculations()
 
+# Moves fowards in 2D ray caster and rendering by 5 unit lengths
+def forward(event):
+	cast.moveForwardBackwards(5)
+	runCalculations()
 
+# Moves backwards in 2D ray caster and rendering by 5 unit lengths
+def backward(event):
+	cast.moveForwardBackwards(-5)
+	runCalculations()
 
+# moves the pov up 5 pixels when the up arrow is pressed
 def up(event):
 	rend.moveUpDown(5)
 	runCalculations()
 
+# moves the pov down 5 pixels when the down arrow is pressed
 def down(event):
 	rend.moveUpDown(-5)
 	runCalculations()
@@ -225,24 +164,27 @@ def down(event):
 
 
 
-# setip for 2D  below
+# setup keybindings for 2D  below
 canvas2d.focus_set()
 canvas2d.bind("<Button-1>", mouse_click)
 canvas2d.bind("<Motion>",mouse_move)
 canvas2d.bind("<Escape>", escape)
 canvas2d.bind("<BackSpace>", delete)
 canvas2d.bind("<Return>",enter)
-canvas2d.bind('<a>', aKey)
-canvas2d.bind('<d>', dKey)
-preDefinedObstacles(obstacleMode)
+canvas2d.bind('<Left>', left)
+canvas2d.bind('<Right>', right)
+canvas2d.bind('<Up>', forward)
+canvas2d.bind('<Down>', backward)
+cast.preDefinedObstacles(cast.obstacleMode)
 
-# setup for 3D  below (bindings still mostly for 2d window)
+# setup keybindings for 3D  below (bindings still mostly for 2d window)
 canvas3d.focus_set()
 canvas3d.bind("<Return>",enter)
-canvas2d.bind("<Up>",up)
-canvas2d.bind("<Down>",down)
+canvas2d.bind("<w>",up)
+canvas2d.bind("<s>",down)
  
 runCalculations() # makes everything appear on launch rather than after first click
 
+# Loop to refresh both windows
 canvas3d.mainloop()
 canvas2d.mainloop()
