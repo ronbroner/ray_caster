@@ -51,7 +51,7 @@ numRays = 480
 cast = Caster(canvas2d,numRays)
 
 ###### Set up 3D Rendering Object #######
-rend = Render(canvas3d,windowWidth,windowHeight,numRays)
+rend = Render(canvas3d,windowWidth,windowHeight,numRays,cast.viewAngle)
 
 
 # Click once to set up the first endpoint of a new obstacle, then as you move the mouse you will drag 

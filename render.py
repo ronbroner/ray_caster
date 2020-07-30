@@ -6,7 +6,7 @@ from rectangle import *
 class Render():
 
 	# Initialize all variables local to 3D rendering
-	def __init__(self,canvas,winWidth,winHeight,rayCount):
+	def __init__(self,canvas,winWidth,winHeight,rayCount,viewAngle):
 		# Drawing surface canvas
 		self.canvas = canvas
 
@@ -16,6 +16,9 @@ class Render():
 
 		# Number of rays
 		self.rayCount = rayCount
+
+		# Angle Subtended by rays
+		self.viewAngle = viewAngle
 
 		# Width of each rendered rectangle 
 		self.rectWidth = winWidth/rayCount
@@ -49,12 +52,20 @@ class Render():
 
 	def updateRays(self,rays):
 		for i in range(len(self.renderRects)):
-			dist = rays[i].getLength()
+
+			# The following 2 lines correct the close up rounding effect by finding the angle of each ray from 
+			# the cener ray and multipling the length of said ray by the cosine of the angle.
+			# This helps make flat objects look flat up close instead of round
+			angle = abs(i*(self.viewAngle/self.rayCount) - self.viewAngle/2) # calculate angle from center ray
+			angle = angle*math.pi/180 # convert to radians
+
+			# calculate the length of each ray (scaled by cosine of the angle)
+			dist = rays[i].getLength()*math.cos(angle)
 
 			# Change rectangle size
 			if dist == 0:
 				height = self.winHeight
-			elif dist >=900:
+			elif dist >=800:
 				height = 0
 			else:
 				height = 10000/dist
