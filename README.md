@@ -1,6 +1,5 @@
 
 # Ray Caster
-### Ron Broner - July 2020
 
 
 <!--ts-->
